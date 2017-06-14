@@ -8,15 +8,53 @@ class EmployeeEditor extends Component {
       originalEmployee: null,
       notModified: true
     };
+
+    // here we bind our functions so that the "this"s used therein are in the context
+    // to EmployeeEditor
+    this.save = this.save.bind(this);
+    this.cancel = this.cancel.bind(this);
   }
 
-  // componentWillReceiveProps
+  // componentWillReceiveProps - 
+  // ie componenent receiving props: this fn tells component what to do with props
+  componentWillReceiveProps(props) {
+    this.setState({
+      employee: Object.assign({}, props.selected),
+      originalEmployee: props.selected
+    })
+  }
 
-  // handleChange
+  // handleChange - handles the change of employee values and stores them as a 
+  // "temp" value on state called "employee"
+  handleChange(propertyToChange, val) {
+    if ( this.state.notModified ) {
+      this.setState({ notModified: false })
+    }
+    //in order to update and item on state we need to pass in a completely different item
+    let employeeCopy = Object.assign({}, this.state.employee) //copy
+    employeeCopy[propertyToChange] = val; // change the one item we want to change
+    this.setState({ employee: employeeCopy}) // store newCopy on temp state property
+  }
 
   // save
+  save() {
+    // call the update methods on originalEmployee (as the original it still retains 
+    // all methods attached to it) - these methods in turn update that empoyee's values
+    this.state.originalEmployee.updateName(this.state.employee.name);
+    this.state.originalEmployee.updatePhone(this.state.employee.phone);
+    this.state.originalEmployee.updateTitle(this.state.employee.title);
+
+    // set as not modified
+    this.setState({ notModified: true })
+    this.props.refreshList() // tells list to reupdate with the new info
+  }
 
   // cancel
+  cancel() {
+    //reverting changes by saving a copy of original to temp "employee" property
+    let employeeCopy = Object.assign({}, this.state.originalEmployee)
+    this.setState({ employee: employeeCopy, notModified: true})
+  }
   
   render() {
     return (
